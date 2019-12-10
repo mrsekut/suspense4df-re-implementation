@@ -1,26 +1,20 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React from "react";
+import "./App.css";
+import { M, Component } from "./kit";
 
-const App: React.FC = () => {
+const useDelay = (value: string, delay = 1000) =>
+  M(new Promise(rs => setTimeout(() => rs(value), delay)));
+
+const App = Component(() => {
+  const m1 = useDelay("hello");
+  const m2 = useDelay("world");
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <h1>
+        {m1}, {m2}
+      </h1>
     </div>
   );
-}
+});
 
 export default App;
