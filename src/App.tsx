@@ -1,5 +1,4 @@
 import React from "react";
-import "./App.css";
 import { M, Component } from "./kit";
 
 const useDelay = (value: string, delay = 1000) =>
