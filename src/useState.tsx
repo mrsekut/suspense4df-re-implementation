@@ -1,8 +1,8 @@
 import React from "react";
-import { M, run, makeComponent } from "./kit";
+import { M, run, makeComponent, Thunk } from "./kit";
 
 // Async Effect
-const runCont = (thunk: any) =>
+const runCont = (thunk: Thunk) =>
   run(
     value => (cont: any) => cont(value),
     (arg, next) => (cont: any) => arg((value: any) => next(value)(cont))

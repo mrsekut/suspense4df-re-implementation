@@ -6,20 +6,25 @@ const token = {};
 /** Pointer to mutable data used to record effectful computations */
 let context: any;
 
-type Run = (of: Of, chain: Chain) => (thunk: any) => any;
-type Of = (v: any) => any;
-type Chain = (arg: any, f: any) => any;
+export type Thunk = any;
+type ThunkFn = (thunk: Thunk) => any;
+type Component = () => JSX.Element;
+type Of<R> = (v: ThunkFn) => R;
+type Chain<R> = (arg: any, f: Fn) => R;
+
+type Fn = (a: any) => any;
 
 /**
  * 抽象的なrunner
  * これがモナドになる
  */
-export const run: Run = (of, chain) => thunk => {
+export const run = <R>(of: Of<R>, chain: Chain<R>) => (thunk: Thunk) => {
   /** here it caches effects requests */
   const trace: any[] = [];
   const ctx: any = { trace };
   return step();
-  function step() {
+
+  function step(): R {
     const savedContext = context;
     ctx.pos = 0;
     try {
@@ -29,7 +34,7 @@ export const run: Run = (of, chain) => thunk => {
       /** re-throwing other exceptions */
       if (e !== token) throw e;
       const { pos } = ctx;
-      return chain(ctx.effect, (value: any) => {
+      return chain(ctx.effect, value => {
         trace.length = pos;
         /* recording the resolved value */
         trace[pos] = value;
@@ -54,16 +59,14 @@ export const M = (eff: any) => {
 };
 
 /** converts effectful component function to React component  */
-export const makeComponent = (run: (thunk: any) => any) => (
-  fun: () => JSX.Element
-) =>
+export const makeComponent = (run: ThunkFn) => (component: Component) =>
   class Wrapper extends React.PureComponent<any, any> {
     mounted: any;
     constructor(props: any) {
       super(props);
       this.state = { control: null };
       run(() => {
-        const control = fun();
+        const control = component();
         this.mounted ? this.setState({ control }) : (this.state = { control });
       });
     }

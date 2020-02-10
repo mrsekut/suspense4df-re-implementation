@@ -4,7 +4,7 @@ import State from "./useState";
 
 const App = () => (
   <div className="App">
-    {/* <Delay /> */}
+    <Delay />
     <State />
   </div>
 );
