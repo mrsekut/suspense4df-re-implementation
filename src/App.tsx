@@ -1,6 +1,6 @@
 import React from "react";
-import Delay from "./useDelay";
-import State from "./useState";
+import Delay from "./components/Delay";
+import State from "./components/State";
 
 const App = () => (
   <div className="App">
