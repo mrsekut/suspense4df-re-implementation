@@ -1,6 +1,17 @@
 import React from "react";
-import { M, Component } from "./kit";
+import { M, run, makeComponent } from "./kit";
 
+/**
+ * Async Effect
+ */
+const runPromise = run(
+  v => Promise.resolve(v), // of
+  (arg, f) => arg.then(f) // chain
+);
+
+const Component = makeComponent(runPromise);
+
+// hooks
 const useDelay = (value: string, delay = 1000) =>
   M(new Promise(rs => setTimeout(() => rs(value), delay)));
 

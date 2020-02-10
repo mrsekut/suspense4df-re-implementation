@@ -7,14 +7,14 @@ const token = {};
 let context: any;
 
 type Run = (of: Of, chain: Chain) => (thunk: any) => any;
-type Of = (v: any) => Promise<any>;
-type Chain = (arg: any, f: any) => Promise<any>;
+type Of = (v: any) => any;
+type Chain = (arg: any, f: any) => any;
 
 /**
  * 抽象的なrunner
  * これがモナドになる
  */
-const run: Run = (of, chain) => thunk => {
+export const run: Run = (of, chain) => thunk => {
   /** here it caches effects requests */
   const trace: any[] = [];
   const ctx: any = { trace };
@@ -45,7 +45,7 @@ const run: Run = (of, chain) => thunk => {
 };
 
 /** marks effectful expression */
-export const M = (eff: Promise<unknown>): string => {
+export const M = (eff: any) => {
   /* if the execution is in a replay stage the value will be cached */
   if (context.pos < context.trace.length) return context.trace[context.pos++];
   /* saving the expression to resolve in `run` */
@@ -74,32 +74,3 @@ export const makeComponent = (run: (thunk: any) => any) => (
       return this.state.control;
     }
   };
-
-/**
- * Async Effect
- * Async Effectってなに？
- */
-export const runPromise = run(
-  v => Promise.resolve(v), // of
-  (arg, f) => arg.then(f) // chain
-);
-
-export const Component = makeComponent(runPromise);
-
-/**
- * useStateを作る
- */
-// const runCont = run(
-//   value => cont => cont(value),
-//   (arg, next) => cont => arg(value => next(value)(cont))
-// );
-
-// const useState = initial =>
-//   M(cont =>
-//     cont([
-//       initial,
-//       function next(value) {
-//         cont([value, next]);
-//       }
-//     ])
-//   );
