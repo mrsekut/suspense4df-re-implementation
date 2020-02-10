@@ -7,9 +7,11 @@ const runCont = (thunk: Thunk) =>
     (arg, next) => (cont: any) => arg((value: any) => next(value)(cont))
   )(thunk)((v: any) => {});
 
+type Cont<T> = (a: [T, Cont<T>]) => any;
+
 // hooks
-export const useState = (initial: any): [any, any] =>
-  M((cont: any) =>
+export const useState = <T>(initial: T): [T, (s: T) => T] =>
+  M((cont: Cont<T>) =>
     cont([
       initial,
       function next(value: any) {

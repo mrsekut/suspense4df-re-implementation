@@ -14,14 +14,20 @@ type Chain<R> = (arg: any, f: Fn) => R;
 
 type Fn = (a: any) => any;
 
+type CTX = {
+  trace: string[];
+  pos: number;
+  effect: Promise<string>;
+};
+
 /**
  * 抽象的なrunner
  * これがモナドになる
  */
 export const run = <R>(of: Of<R>, chain: Chain<R>) => (thunk: Thunk) => {
   /** here it caches effects requests */
-  const trace: any[] = [];
-  const ctx: any = { trace };
+  const trace: string[] = [];
+  const ctx = { trace } as CTX;
   return step();
 
   function step(): R {
@@ -33,8 +39,8 @@ export const run = <R>(of: Of<R>, chain: Chain<R>) => (thunk: Thunk) => {
     } catch (e) {
       /** re-throwing other exceptions */
       if (e !== token) throw e;
-      const { pos } = ctx;
-      return chain(ctx.effect, value => {
+      const { pos, effect } = ctx;
+      return chain(effect, value => {
         trace.length = pos;
         /* recording the resolved value */
         trace[pos] = value;
@@ -50,7 +56,7 @@ export const run = <R>(of: Of<R>, chain: Chain<R>) => (thunk: Thunk) => {
 };
 
 /** marks effectful expression */
-export const M = (eff: any) => {
+export const M = <T>(eff: T) => {
   /* if the execution is in a replay stage the value will be cached */
   if (context.pos < context.trace.length) return context.trace[context.pos++];
   /* saving the expression to resolve in `run` */
@@ -58,21 +64,29 @@ export const M = (eff: any) => {
   throw token;
 };
 
+type State = {
+  control: JSX.Element | null;
+};
 /** converts effectful component function to React component  */
 export const makeComponent = (run: ThunkFn) => (component: Component) =>
-  class Wrapper extends React.PureComponent<any, any> {
-    mounted: any;
-    constructor(props: any) {
+  class Wrapper extends React.PureComponent<{}, State> {
+    mounted: boolean;
+
+    constructor(props: {}) {
       super(props);
+      this.mounted = false;
       this.state = { control: null };
+
       run(() => {
         const control = component();
         this.mounted ? this.setState({ control }) : (this.state = { control });
       });
     }
+
     componentDidMount() {
       this.mounted = true;
     }
+
     render() {
       return this.state.control;
     }
