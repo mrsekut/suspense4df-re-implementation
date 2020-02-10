@@ -13,7 +13,6 @@ type Chain = (arg: any, f: any) => Promise<any>;
 /**
  * 抽象的なrunner
  * これがモナドになる
- * Runs `thunk()` as an effectful expression with `of` and `chain` as Monad's definition
  */
 const run: Run = (of, chain) => thunk => {
   /** here it caches effects requests */
@@ -76,9 +75,31 @@ export const makeComponent = (run: (thunk: any) => any) => (
     }
   };
 
+/**
+ * Async Effect
+ * Async Effectってなに？
+ */
 export const runPromise = run(
   v => Promise.resolve(v), // of
   (arg, f) => arg.then(f) // chain
 );
 
 export const Component = makeComponent(runPromise);
+
+/**
+ * useStateを作る
+ */
+// const runCont = run(
+//   value => cont => cont(value),
+//   (arg, next) => cont => arg(value => next(value)(cont))
+// );
+
+// const useState = initial =>
+//   M(cont =>
+//     cont([
+//       initial,
+//       function next(value) {
+//         cont([value, next]);
+//       }
+//     ])
+//   );
